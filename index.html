@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>US AGRICOM Invoice Template</title>
+    <title id="pageTitle">US AGRICOM Invoice Template</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 30px;
+                margin-bottom: 10px;
         }
         .logo-section {
             display: flex;
@@ -200,17 +200,17 @@
             </thead>
             <tbody id="invoiceItems">
                 <tr class="table-row">
-                    <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="calculateRowTotal(this)"></td>
-                    <td><input type="text" class="input-field unit-input"></td>
-                    <td><input type="text" class="input-field description-input"></td>
-                    <td><input type="number" class="input-field price-input" min="0" step="1" onchange="calculateRowTotal(this)"></td>
+                    <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="handleInputChange(this)" oninput="handleInputChange(this)"></td>
+                    <td><input type="text" class="input-field unit-input" oninput="handleInputChange(this)"></td>
+                    <td><input type="text" class="input-field description-input" oninput="handleInputChange(this)"></td>
+                    <td><input type="number" class="input-field price-input" min="0" step="1" onchange="handleInputChange(this)" oninput="handleInputChange(this)"></td>
                     <td class="total-cell"></td>
                 </tr>
                 <tr class="table-row">
-                    <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="calculateRowTotal(this)"></td>
-                    <td><input type="text" class="input-field unit-input"></td>
-                    <td><input type="text" class="input-field description-input"></td>
-                    <td><input type="number" class="input-field price-input" min="0" step="1" onchange="calculateRowTotal(this)"></td>
+                    <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="handleInputChange(this)" oninput="handleInputChange(this)"></td>
+                    <td><input type="text" class="input-field unit-input" oninput="handleInputChange(this)"></td>
+                    <td><input type="text" class="input-field description-input" oninput="handleInputChange(this)"></td>
+                    <td><input type="number" class="input-field price-input" min="0" step="1" onchange="handleInputChange(this)" oninput="handleInputChange(this)"></td>
                     <td class="total-cell"></td>
                 </tr>
             </tbody>
@@ -239,6 +239,36 @@
             totalCell.textContent = '$' + total.toFixed(2);
             
             calculateGrandTotal();
+            checkAndAddNewRow(row);
+        }
+
+        // Check if we need to add a new row automatically
+        function checkAndAddNewRow(currentRow) {
+            const tbody = document.getElementById('invoiceItems');
+            const rows = tbody.querySelectorAll('.table-row');
+            const lastRow = rows[rows.length - 1];
+            
+            // Check if current row is the last row and has any data
+            if (currentRow === lastRow) {
+                const hasData = Array.from(currentRow.querySelectorAll('input')).some(input => input.value.trim() !== '');
+                
+                if (hasData) {
+                    addRow();
+                }
+            }
+        }
+
+        // Enhanced input change handler
+        function handleInputChange(input) {
+            const row = input.closest('tr');
+            
+            // If it's a qty or price input, calculate the total
+            if (input.classList.contains('qty-input') || input.classList.contains('price-input')) {
+                calculateRowTotal(input);
+            } else {
+                // For other inputs, just check if we need a new row
+                checkAndAddNewRow(row);
+            }
         }
         
         function calculateGrandTotal() {
@@ -253,8 +283,37 @@
             document.getElementById('grandTotal').textContent = '$' + grandTotal.toFixed(2);
         }
         
-        // Set today's date as default
+        // Generate unique invoice number based on current date and time
+        function generateInvoiceNumber() {
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
+            const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Month (01-12)
+            const day = now.getDate().toString().padStart(2, '0'); // Day (01-31)
+            const hour = now.getHours().toString().padStart(2, '0'); // Hour (00-23)
+            const minute = now.getMinutes().toString().padStart(2, '0'); // Minute (00-59)
+            
+            return `${year}${month}${day}${hour}${minute}`;
+        }
+        
+        // Update page title with invoice number
+        function updatePageTitle() {
+            const invoiceNumber = document.getElementById('invoiceNumber').value;
+            const pageTitle = document.getElementById('pageTitle');
+            if (invoiceNumber) {
+                pageTitle.textContent = `US Agricom Invoice No ${invoiceNumber}`;
+            } else {
+                pageTitle.textContent = 'US AGRICOM Invoice Template';
+            }
+        }
+        
+        // Set today's date as default and generate invoice number
         document.getElementById('invoiceDate').valueAsDate = new Date();
+        const generatedNumber = generateInvoiceNumber();
+        document.getElementById('invoiceNumber').value = generatedNumber;
+        updatePageTitle();
+        
+        // Add event listener to update title when invoice number changes
+        document.getElementById('invoiceNumber').addEventListener('input', updatePageTitle);
         
         // Add more rows functionality
         function addRow() {
@@ -262,7 +321,16 @@
             const newRow = tbody.rows[0].cloneNode(true);
             
             // Clear the inputs in the new row
-            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                // Update event handlers for the new row
+                if (input.classList.contains('qty-input') || input.classList.contains('price-input')) {
+                    input.onchange = function() { handleInputChange(this); };
+                    input.oninput = function() { handleInputChange(this); };
+                } else {
+                    input.oninput = function() { handleInputChange(this); };
+                }
+            });
             newRow.querySelector('.total-cell').textContent = '';
             
             tbody.appendChild(newRow);
@@ -388,12 +456,12 @@
         const removeRowBtn = document.createElement('button');
         removeRowBtn.textContent = 'Remove Row';
         removeRowBtn.className = 'print-btn';
-        removeRowBtn.style.marginRight = '10px';
+        removeRowBtn.style.marginRight = '222px'; // Extra space after editing buttons
         removeRowBtn.onclick = removeRow;
 
         // Add button to save as CSV
         const saveCSVBtn = document.createElement('button');
-        saveCSVBtn.textContent = 'Save as CSV';
+        saveCSVBtn.textContent = 'Save As';
         saveCSVBtn.className = 'print-btn';
         saveCSVBtn.style.marginRight = '10px';
         saveCSVBtn.onclick = saveAsCSV;
@@ -407,7 +475,7 @@
 
         // Add button to import CSV
         const importCSVBtn = document.createElement('button');
-        importCSVBtn.textContent = 'Open CSV';
+        importCSVBtn.textContent = 'Open';
         importCSVBtn.className = 'print-btn';
         importCSVBtn.style.marginRight = '10px';
         importCSVBtn.onclick = () => importInput.click();
@@ -415,10 +483,12 @@
         const container = document.querySelector('.container');
         const printBtn = container.querySelector('.print-btn');
         container.appendChild(importInput);
-        container.insertBefore(importCSVBtn, printBtn);
-        container.insertBefore(saveCSVBtn, printBtn);
+        
+        // Insert buttons in the new order: Add Row, Remove Row, [space], Open, Save As, Print Invoice
         container.insertBefore(addRowBtn, printBtn);
         container.insertBefore(removeRowBtn, printBtn);
+        container.insertBefore(importCSVBtn, printBtn);
+        container.insertBefore(saveCSVBtn, printBtn);
     </script>
 </body>
 </html>
