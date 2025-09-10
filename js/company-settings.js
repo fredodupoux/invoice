@@ -231,18 +231,9 @@ class CompanySettings {
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-primary" onclick="CompanySettings.saveSettings()">Save Settings</button>
+                            <button type="button" class="btn btn-primary" onclick="CompanySettings.saveAsProfile()">💾 Save & Create Profile</button>
                             <button type="button" class="btn btn-secondary" onclick="CompanySettings.closeModal()">Cancel</button>
                             <button type="button" class="btn btn-outline" onclick="CompanySettings.resetToDefaults()">Reset to Defaults</button>
-                        </div>
-                        
-                        <div class="profile-actions-section">
-                            <hr>
-                            <h3>Company Profiles</h3>
-                            <div class="profile-form-actions">
-                                <button type="button" class="btn btn-outline" onclick="CompanySettings.saveAsProfile()">💾 Save as Profile</button>
-                                <button type="button" class="btn btn-outline" onclick="CompanySettings.openProfilesModal(); CompanySettings.closeModal();">📂 Manage Profiles</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -285,28 +276,6 @@ class CompanySettings {
         
         // Set up color picker event listeners
         CompanySettings.setupColorPickerEvents();
-    }
-
-    // Save settings from the form
-    static saveSettings() {
-        const settings = window.companySettings.getSettings();
-        const newSettings = {
-            name: document.getElementById('companyNameInput').value,
-            address: document.getElementById('companyAddressInput').value,
-            phone: document.getElementById('companyPhoneInput').value,
-            email: document.getElementById('companyEmailInput').value,
-            website: document.getElementById('companyWebsiteInput').value,
-            invoicePrefix: document.getElementById('invoicePrefixInput').value || 'INV',
-            invoiceStartNumber: parseInt(document.getElementById('invoiceStartNumberInput').value) || 1,
-            taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0,
-            brandColor: document.getElementById('brandColorInput').value || '#1e3a8a',
-            logo: settings.logo // Preserve current logo (updated through separate upload process)
-        };
-        
-        window.companySettings.updateSettings(newSettings);
-        
-        alert('Company settings saved successfully!');
-        CompanySettings.closeModal();
     }
 
     // Reset to default settings
@@ -406,24 +375,44 @@ class CompanySettings {
 
     // Save current company settings as a profile
     static saveAsProfile() {
-        const profileName = prompt('Enter a name for this company profile:');
-        if (!profileName || profileName.trim() === '') {
-            return;
-        }
-
-        try {
-            const currentSettings = window.companySettings.getSettings();
-            const profileId = window.storageManager.saveCompanyProfile(currentSettings, profileName.trim());
-            alert(`Company profile "${profileName}" saved successfully!`);
-            
-            // Refresh profiles list if modal is open
-            const profilesModal = document.getElementById('companyProfilesModal');
-            if (profilesModal && profilesModal.classList.contains('show')) {
-                CompanySettings.populateProfilesList();
+        // First, save the current form data as the active settings
+        const settings = window.companySettings.getSettings();
+        const newSettings = {
+            name: document.getElementById('companyNameInput').value,
+            address: document.getElementById('companyAddressInput').value,
+            phone: document.getElementById('companyPhoneInput').value,
+            email: document.getElementById('companyEmailInput').value,
+            website: document.getElementById('companyWebsiteInput').value,
+            invoicePrefix: document.getElementById('invoicePrefixInput').value || 'INV',
+            invoiceStartNumber: parseInt(document.getElementById('invoiceStartNumberInput').value) || 1,
+            taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0,
+            brandColor: document.getElementById('brandColorInput').value || '#1e3a8a',
+            logo: settings.logo // Preserve current logo (updated through separate upload process)
+        };
+        
+        // Update the current settings
+        window.companySettings.updateSettings(newSettings);
+        
+        // Now prompt for profile name to save as a reusable profile
+        const profileName = prompt('Settings saved! Enter a name to save as a reusable profile (or Cancel to skip):');
+        if (profileName && profileName.trim() !== '') {
+            try {
+                const profileId = window.storageManager.saveCompanyProfile(newSettings, profileName.trim());
+                alert(`Settings saved and profile "${profileName}" created successfully!`);
+                
+                // Refresh profiles list if modal is open
+                const profilesModal = document.getElementById('companyProfilesModal');
+                if (profilesModal && profilesModal.classList.contains('show')) {
+                    CompanySettings.populateProfilesList();
+                }
+            } catch (error) {
+                alert(`Settings saved, but error creating profile: ${error.message}`);
             }
-        } catch (error) {
-            alert(`Error saving profile: ${error.message}`);
+        } else {
+            alert('Settings saved successfully!');
         }
+        
+        CompanySettings.closeModal();
     }
 
     // Open company profiles manager
