@@ -60,16 +60,17 @@ class InvoiceApp {
             // Apply company settings to current invoice
             this.companySettings.applySettingsToInvoice();
 
-            // Add UI buttons
-            this.addInvoiceButtons();
-            this.addDraftButtons();
-            this.addCompanySettingsButton();
+            // Add UI components
+            this.createSideMenu();
             
             // Set up event listeners
             this.setupEventListeners();
             
             // Initialize test functions for console
             this.initializeTestFunctions();
+            
+            // Make app globally accessible for menu buttons
+            window.invoiceApp = this;
             
             this.initialized = true;
             console.log('Invoice application initialized successfully');
@@ -79,89 +80,104 @@ class InvoiceApp {
         }
     }
 
-    // Add main invoice action buttons
-    addInvoiceButtons() {
-        // Create button container
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container';
+    // Create side menu with all functionality
+    createSideMenu() {
+        // Create menu toggle button
+        const menuToggle = document.createElement('button');
+        menuToggle.className = 'menu-toggle';
+        menuToggle.innerHTML = '☰';
+        menuToggle.onclick = () => this.toggleSideMenu();
         
-        const addRowBtn = document.createElement('button');
-        addRowBtn.textContent = 'Add Row';
-        addRowBtn.className = 'print-btn';
-        addRowBtn.onclick = () => this.invoiceCore.addRow();
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'menu-overlay';
+        overlay.onclick = () => this.closeSideMenu();
         
-        const removeRowBtn = document.createElement('button');
-        removeRowBtn.textContent = 'Remove Row';
-        removeRowBtn.className = 'print-btn';
-        removeRowBtn.onclick = () => this.invoiceCore.removeRow();
+        // Create side menu
+        const sideMenu = document.createElement('div');
+        sideMenu.className = 'side-menu';
+        sideMenu.innerHTML = `
+            <div class="side-menu-header">
+                Invoice Actions
+            </div>
+            <div class="side-menu-content">
+                <div class="menu-section">
+                    <h3>Document Actions</h3>
+                    <button class="menu-button" onclick="invoiceApp.csvHandler.triggerFileInput()">
+                        📂 Open Invoice
+                    </button>
+                    <button class="menu-button" onclick="invoiceApp.csvHandler.exportToCSV()">
+                        💾 Save As CSV
+                    </button>
+                    <button class="menu-button" onclick="invoiceApp.pdfGenerator.generatePDF()">
+                        🖨️ Print Invoice
+                    </button>
+                </div>
+                
+                <div class="menu-section">
+                    <h3>Invoice Management</h3>
+                    <button class="menu-button" onclick="invoiceApp.invoiceCore.addRow()">
+                        ➕ Add Row
+                    </button>
+                    <button class="menu-button" onclick="invoiceApp.invoiceCore.removeRow()">
+                        ➖ Remove Row
+                    </button>
+                </div>
+                
+                <div class="menu-section">
+                    <h3>Drafts</h3>
+                    <button class="menu-button" onclick="DraftUI.saveDraft(); invoiceApp.closeSideMenu();">
+                        💾 Save Draft
+                    </button>
+                    <button class="menu-button" onclick="DraftUI.openModal(); invoiceApp.closeSideMenu();">
+                        📋 View Drafts
+                    </button>
+                </div>
+                
+                <div class="menu-section">
+                    <h3>Settings</h3>
+                    <button class="menu-button" onclick="CompanySettings.openModal(); invoiceApp.closeSideMenu();">
+                        ⚙️ Company Settings
+                    </button>
+                </div>
+            </div>
+        `;
         
-        const importCSVBtn = document.createElement('button');
-        importCSVBtn.textContent = 'Open';
-        importCSVBtn.className = 'print-btn';
-        importCSVBtn.onclick = () => this.csvHandler.triggerFileInput();
+        // Add elements to page
+        document.body.appendChild(menuToggle);
+        document.body.appendChild(overlay);
+        document.body.appendChild(sideMenu);
         
-        const saveCSVBtn = document.createElement('button');
-        saveCSVBtn.textContent = 'Save As';
-        saveCSVBtn.className = 'print-btn';
-        saveCSVBtn.onclick = () => this.csvHandler.exportToCSV();
-        
-        const printBtn = document.createElement('button');
-        printBtn.textContent = 'Print Invoice';
-        printBtn.className = 'print-btn';
-        printBtn.onclick = () => this.pdfGenerator.generatePDF();
-        
-        // Add buttons to container
-        buttonContainer.appendChild(addRowBtn);
-        buttonContainer.appendChild(removeRowBtn);
-        buttonContainer.appendChild(importCSVBtn);
-        buttonContainer.appendChild(saveCSVBtn);
-        buttonContainer.appendChild(printBtn);
-        
-        // Add container to main container
-        const container = document.querySelector('.container');
-        container.appendChild(buttonContainer);
+        // Store references
+        this.menuToggle = menuToggle;
+        this.menuOverlay = overlay;
+        this.sideMenu = sideMenu;
     }
-
-    // Add draft management buttons
-    addDraftButtons() {
-        // Create Save Draft button
-        const saveDraftBtn = document.createElement('button');
-        saveDraftBtn.textContent = 'Save Draft';
-        saveDraftBtn.className = 'save-draft-btn';
-        saveDraftBtn.onclick = () => DraftUI.saveDraft();
-
-        // Create View Drafts button
-        const viewDraftsBtn = document.createElement('button');
-        viewDraftsBtn.textContent = 'View Drafts';
-        viewDraftsBtn.className = 'drafts-btn';
-        viewDraftsBtn.onclick = () => DraftUI.openModal();
-
-        // Add to existing button container
-        const buttonContainer = document.querySelector('.button-container');
-        if (buttonContainer) {
-            buttonContainer.insertBefore(saveDraftBtn, buttonContainer.firstChild);
-            buttonContainer.insertBefore(viewDraftsBtn, buttonContainer.firstChild);
+    
+    // Toggle side menu
+    toggleSideMenu() {
+        const isOpen = this.sideMenu.classList.contains('open');
+        if (isOpen) {
+            this.closeSideMenu();
+        } else {
+            this.openSideMenu();
         }
     }
-
-    // Add company settings button
-    addCompanySettingsButton() {
-        const settingsBtn = document.createElement('button');
-        settingsBtn.textContent = '⚙️ Settings';
-        settingsBtn.className = 'drafts-btn';
-        settingsBtn.onclick = () => CompanySettings.openModal();
-
-        // Add to existing button container
-        const buttonContainer = document.querySelector('.button-container');
-        if (buttonContainer) {
-            // Insert after view drafts button (which should be the second child)
-            const viewDraftsBtn = buttonContainer.children[1];
-            if (viewDraftsBtn) {
-                buttonContainer.insertBefore(settingsBtn, viewDraftsBtn.nextSibling);
-            } else {
-                buttonContainer.appendChild(settingsBtn);
-            }
-        }
+    
+    // Open side menu
+    openSideMenu() {
+        this.sideMenu.classList.add('open');
+        this.menuOverlay.classList.add('active');
+        this.menuToggle.classList.add('active');
+        this.menuToggle.innerHTML = '✕';
+    }
+    
+    // Close side menu
+    closeSideMenu() {
+        this.sideMenu.classList.remove('open');
+        this.menuOverlay.classList.remove('active');
+        this.menuToggle.classList.remove('active');
+        this.menuToggle.innerHTML = '☰';
     }
 
     // Set up event listeners
@@ -186,9 +202,20 @@ class InvoiceApp {
                 e.preventDefault();
                 DraftUI.saveDraft();
             }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                this.pdfGenerator.generatePDF();
+            }
+            // Escape to close side menu and modals
             if (e.key === 'Escape') {
+                this.closeSideMenu();
                 DraftUI.closeModal();
                 CompanySettings.closeModal();
+            }
+            // Ctrl+M or Cmd+M to toggle menu
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                this.toggleSideMenu();
             }
         });
     }
