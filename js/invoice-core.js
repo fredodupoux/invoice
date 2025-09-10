@@ -114,9 +114,15 @@ class InvoiceCore {
     
     addRow() {
         const newRow = document.createElement('tr');
-        newRow.className = 'table-row';
+        newRow.className = 'table-row invoice-row';
         newRow.innerHTML = `
-            <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="window.invoiceCore.calculateRowTotal(this)" oninput="window.invoiceCore.handleInputChange(this)"></td>
+            <td>
+                <input type="number" class="input-field qty-input" min="0" step="1" onchange="window.invoiceCore.calculateRowTotal(this)" oninput="window.invoiceCore.handleInputChange(this)">
+                <div class="row-controls">
+                    <button class="row-control-btn remove-btn" onclick="window.invoiceCore.removeRowAtIndex(this)" title="Remove row">−</button>
+                    <button class="row-control-btn add-btn" onclick="window.invoiceCore.addRow()" title="Add row">+</button>
+                </div>
+            </td>
             <td><input type="text" class="input-field unit-input" oninput="window.invoiceCore.handleInputChange(this)"></td>
             <td><input type="text" class="input-field description-input" oninput="window.invoiceCore.handleInputChange(this)"></td>
             <td><input type="number" class="input-field price-input" min="0" step="1" onchange="window.invoiceCore.calculateRowTotal(this)" oninput="window.invoiceCore.handleInputChange(this)"></td>
@@ -129,6 +135,18 @@ class InvoiceCore {
         const rows = this.invoiceTableBody.querySelectorAll('.table-row');
         if (rows.length > 1) {
             this.invoiceTableBody.removeChild(rows[rows.length - 1]);
+            this.calculateGrandTotal();
+        }
+    }
+
+    // Remove specific row when clicking the - button
+    removeRowAtIndex(button) {
+        const row = button.closest('tr');
+        const rows = this.invoiceTableBody.querySelectorAll('.table-row');
+        
+        // Don't allow removing the last remaining row
+        if (rows.length > 1) {
+            row.remove();
             this.calculateGrandTotal();
         }
     }

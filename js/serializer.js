@@ -80,9 +80,15 @@ class InvoiceSerializer {
         if (data.items && data.items.length > 0) {
             data.items.forEach(item => {
                 const newRow = document.createElement('tr');
-                newRow.className = 'table-row';
+                newRow.className = 'table-row invoice-row';
                 newRow.innerHTML = `
-                    <td><input type="number" class="input-field qty-input" min="0" step="1" onchange="calculateRowTotal(this)" oninput="handleInputChange(this)" value="${item.quantity || ''}"></td>
+                    <td>
+                        <input type="number" class="input-field qty-input" min="0" step="1" onchange="calculateRowTotal(this)" oninput="handleInputChange(this)" value="${item.quantity || ''}">
+                        <div class="row-controls">
+                            <button class="row-control-btn remove-btn" onclick="window.invoiceCore.removeRowAtIndex(this)" title="Remove row">−</button>
+                            <button class="row-control-btn add-btn" onclick="window.invoiceCore.addRow()" title="Add row">+</button>
+                        </div>
+                    </td>
                     <td><input type="text" class="input-field unit-input" oninput="handleInputChange(this)" value="${item.unit || ''}"></td>
                     <td><input type="text" class="input-field description-input" oninput="handleInputChange(this)" value="${item.description || ''}"></td>
                     <td><input type="number" class="input-field price-input" min="0" step="1" onchange="calculateRowTotal(this)" oninput="handleInputChange(this)" value="${item.price || ''}"></td>

@@ -88,6 +88,13 @@ class InvoiceApp {
         menuToggle.innerHTML = '☰';
         menuToggle.onclick = () => this.toggleSideMenu();
         
+        // Create new invoice button
+        const newInvoiceToggle = document.createElement('button');
+        newInvoiceToggle.className = 'new-invoice-toggle';
+        newInvoiceToggle.innerHTML = '+';
+        newInvoiceToggle.onclick = () => this.createNewInvoice();
+        newInvoiceToggle.title = 'New Invoice';
+        
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'menu-overlay';
@@ -103,6 +110,9 @@ class InvoiceApp {
             <div class="side-menu-content">
                 <div class="menu-section">
                     <h3>Document Actions</h3>
+                    <button class="menu-button" onclick="invoiceApp.createNewInvoice()">
+                        ➕ New Invoice
+                    </button>
                     <button class="menu-button" onclick="invoiceApp.csvHandler.triggerFileInput()">
                         📂 Open Invoice
                     </button>
@@ -111,16 +121,6 @@ class InvoiceApp {
                     </button>
                     <button class="menu-button" onclick="invoiceApp.pdfGenerator.generatePDF()">
                         🖨️ Print Invoice
-                    </button>
-                </div>
-                
-                <div class="menu-section">
-                    <h3>Invoice Management</h3>
-                    <button class="menu-button" onclick="invoiceApp.invoiceCore.addRow()">
-                        ➕ Add Row
-                    </button>
-                    <button class="menu-button" onclick="invoiceApp.invoiceCore.removeRow()">
-                        ➖ Remove Row
                     </button>
                 </div>
                 
@@ -145,11 +145,13 @@ class InvoiceApp {
         
         // Add elements to page
         document.body.appendChild(menuToggle);
+        document.body.appendChild(newInvoiceToggle);
         document.body.appendChild(overlay);
         document.body.appendChild(sideMenu);
         
         // Store references
         this.menuToggle = menuToggle;
+        this.newInvoiceToggle = newInvoiceToggle;
         this.menuOverlay = overlay;
         this.sideMenu = sideMenu;
     }
@@ -180,6 +182,139 @@ class InvoiceApp {
         this.menuToggle.innerHTML = '☰';
     }
 
+    // Create new invoice with save/print option for current one
+    createNewInvoice() {
+        // Check if current invoice has any content
+        const hasContent = this.checkForInvoiceContent();
+        
+        if (hasContent) {
+            this.showNewInvoiceModal();
+        } else {
+            // No content, just create new invoice
+            this.clearInvoiceForm();
+            this.closeSideMenu();
+        }
+    }
+
+    // Check if the current invoice has any content
+    checkForInvoiceContent() {
+        const rows = document.querySelectorAll('#invoiceItems .table-row');
+        let hasContent = false;
+        
+        // Check invoice fields
+        const invoiceDate = document.getElementById('invoiceDate').value;
+        const invoiceNumber = document.getElementById('invoiceNumber').value;
+        const soldTo = document.getElementById('soldTo').value;
+        const consignedTo = document.getElementById('consignedTo').value;
+        
+        if (invoiceDate || invoiceNumber || soldTo || consignedTo) {
+            hasContent = true;
+        }
+        
+        // Check invoice rows
+        rows.forEach(row => {
+            const qty = row.querySelector('.qty-input').value;
+            const unit = row.querySelector('.unit-input').value;
+            const description = row.querySelector('.description-input').value;
+            const price = row.querySelector('.price-input').value;
+            
+            if (qty || unit || description || price) {
+                hasContent = true;
+            }
+        });
+        
+        return hasContent;
+    }
+
+    // Show modal asking what to do with current invoice
+    showNewInvoiceModal() {
+        const modalHTML = `
+            <div id="newInvoiceModal" class="draft-modal show">
+                <div class="draft-modal-content">
+                    <div class="draft-modal-header">
+                        <h2 class="draft-modal-title">Are You Finished?</h2>
+                        <button class="close-modal" onclick="invoiceApp.closeNewInvoiceModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>What would you like to do before creating a new invoice?</p>
+                        <div class="new-invoice-actions">
+                            <button class="btn btn-primary" onclick="invoiceApp.saveCurrentAndCreateNew()">
+                                Save Draft
+                            </button>
+                            <button class="btn btn-outline" onclick="invoiceApp.printCurrentAndCreateNew()">
+                                Print Invoice
+                            </button>
+                            <button class="btn btn-secondary" onclick="invoiceApp.discardCurrentAndCreateNew()">
+                                Discard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Close new invoice modal
+    closeNewInvoiceModal() {
+        const modal = document.getElementById('newInvoiceModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    // Save current invoice as draft and create new
+    saveCurrentAndCreateNew() {
+        DraftUI.saveDraft();
+        this.clearInvoiceForm();
+        this.closeNewInvoiceModal();
+        this.closeSideMenu();
+    }
+
+    // Print current invoice and create new
+    printCurrentAndCreateNew() {
+        this.pdfGenerator.generatePDF();
+        // Wait a moment for PDF generation, then clear form
+        setTimeout(() => {
+            this.clearInvoiceForm();
+            this.closeNewInvoiceModal();
+            this.closeSideMenu();
+        }, 1000);
+    }
+
+    // Discard current invoice and create new
+    discardCurrentAndCreateNew() {
+        this.clearInvoiceForm();
+        this.closeNewInvoiceModal();
+        this.closeSideMenu();
+    }
+
+    // Clear the invoice form to create a blank invoice
+    clearInvoiceForm() {
+        // Clear header fields
+        document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('invoiceNumber').value = '';
+        document.getElementById('soldTo').value = '';
+        document.getElementById('consignedTo').value = '';
+        
+        // Clear all rows and add one empty row
+        const tbody = document.getElementById('invoiceItems');
+        tbody.innerHTML = '';
+        this.invoiceCore.addRow();
+        
+        // Reset grand total
+        this.invoiceCore.calculateGrandTotal();
+        
+        // Generate new invoice number
+        this.invoiceCore.setupInvoiceNumberGeneration();
+        
+        // Update page title
+        this.invoiceCore.updatePageTitle();
+        
+        console.log('New blank invoice created');
+    }
+
     // Set up event listeners
     setupEventListeners() {
         // Close modal when clicking outside
@@ -189,6 +324,9 @@ class InvoiceApp {
             }
             if (e.target.id === 'companySettingsModal') {
                 CompanySettings.closeModal();
+            }
+            if (e.target.id === 'newInvoiceModal') {
+                this.closeNewInvoiceModal();
             }
         });
 

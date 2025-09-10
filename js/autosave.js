@@ -47,8 +47,8 @@ class AutoSave {
         statusDiv.id = 'autoSaveStatus';
         statusDiv.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px;
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid #ddd;
             border-radius: 4px;
