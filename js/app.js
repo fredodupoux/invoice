@@ -91,6 +91,20 @@ class InvoiceApp {
         newInvoiceToggle.onclick = () => this.createNewInvoice();
         newInvoiceToggle.title = 'New Invoice';
         
+        // Create save draft button
+        const saveDraftToggle = document.createElement('button');
+        saveDraftToggle.className = 'save-draft-toggle';
+        saveDraftToggle.innerHTML = '💾';
+        saveDraftToggle.onclick = () => DraftUI.saveDraft();
+        saveDraftToggle.title = 'Save Draft';
+        
+        // Create view drafts button
+        const viewDraftsToggle = document.createElement('button');
+        viewDraftsToggle.className = 'view-drafts-toggle';
+        viewDraftsToggle.innerHTML = '📋';
+        viewDraftsToggle.onclick = () => DraftUI.openModal();
+        viewDraftsToggle.title = 'View Drafts';
+        
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'menu-overlay';
@@ -145,12 +159,16 @@ class InvoiceApp {
         // Add elements to page
         document.body.appendChild(menuToggle);
         document.body.appendChild(newInvoiceToggle);
+        document.body.appendChild(saveDraftToggle);
+        document.body.appendChild(viewDraftsToggle);
         document.body.appendChild(overlay);
         document.body.appendChild(sideMenu);
         
         // Store references
         this.menuToggle = menuToggle;
         this.newInvoiceToggle = newInvoiceToggle;
+        this.saveDraftToggle = saveDraftToggle;
+        this.viewDraftsToggle = viewDraftsToggle;
         this.menuOverlay = overlay;
         this.sideMenu = sideMenu;
     }

@@ -234,7 +234,11 @@
     .draft-modal,
     .draft-modal-content,
     .settings-form,
-    .close-modal {
+    .close-modal,
+    .menu-toggle,
+    .new-invoice-toggle,
+    .save-draft-toggle,
+    .view-drafts-toggle {
         display: none !important;
     }
 }

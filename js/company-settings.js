@@ -48,6 +48,19 @@ class CompanySettings {
             printableLogoElement.src = settings.logo;
         }
 
+        // Apply brand color to company name and invoice title
+        if (settings.brandColor) {
+            const companyNameElement = document.querySelector('.company-name');
+            const invoiceTitleElement = document.querySelector('.invoice-title');
+            
+            if (companyNameElement) {
+                companyNameElement.style.color = settings.brandColor;
+            }
+            if (invoiceTitleElement) {
+                invoiceTitleElement.style.color = settings.brandColor;
+            }
+        }
+
         // Update company info section (create if doesn't exist)
         this.updateCompanyInfoDisplay(settings);
     }
@@ -143,20 +156,6 @@ class CompanySettings {
                         <div class="form-section">
                             <h3>Company Information</h3>
                             <div class="form-group">
-                                <label for="companyLogoInput">Company Logo:</label>
-                                <div class="logo-upload-section">
-                                    <div class="current-logo-preview">
-                                        <img id="logoPreview" src="" alt="Current Logo" style="max-width: 150px; max-height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; display: none;">
-                                    </div>
-                                    <div class="logo-upload-controls">
-                                        <input type="file" id="companyLogoInput" accept="image/*" style="display: none;">
-                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.selectLogo()">Choose Logo</button>
-                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.removeLogo()" id="removeLogoBtn" style="display: none;">Remove Logo</button>
-                                    </div>
-                                    <small class="form-text">Supported formats: JPG, PNG, GIF. Maximum size: 2MB.</small>
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label for="companyNameInput">Company Name:</label>
                                 <input type="text" id="companyNameInput" class="form-control" placeholder="Enter company name">
                             </div>
@@ -195,6 +194,39 @@ class CompanySettings {
                             <div class="form-group">
                                 <label for="taxRateInput">Default Tax Rate (%):</label>
                                 <input type="number" id="taxRateInput" class="form-control" min="0" max="100" step="0.01" placeholder="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Branding</h3>
+                            <div class="form-group">
+                                <label for="companyLogoInput">Company Logo:</label>
+                                <div class="logo-upload-section">
+                                    <div class="current-logo-preview">
+                                        <img id="logoPreview" src="" alt="Current Logo" style="max-width: 150px; max-height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; display: none;">
+                                    </div>
+                                    <div class="logo-upload-controls">
+                                        <input type="file" id="companyLogoInput" accept="image/*" style="display: none;">
+                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.selectLogo()">Choose Logo</button>
+                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.removeLogo()" id="removeLogoBtn" style="display: none;">Remove Logo</button>
+                                    </div>
+                                    <small class="form-text">Supported formats: JPG, PNG, GIF. Maximum size: 2MB.</small>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="brandColorInput">Brand Color:</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="brandColorInput" class="color-picker" value="#1e3a8a">
+                                    <input type="text" id="brandColorText" class="form-control color-text" placeholder="#1e3a8a" maxlength="7">
+                                </div>
+                                <small class="form-text">This color will be applied to your company name and invoice title.</small>
+                            </div>
+                            <div class="color-preview">
+                                <div class="preview-item">
+                                    <span class="preview-label">Preview:</span>
+                                    <div class="preview-company-name" id="previewCompanyName">Company Name</div>
+                                    <div class="preview-invoice-title" id="previewInvoiceTitle">INVOICE</div>
+                                </div>
                             </div>
                         </div>
                         
@@ -244,6 +276,15 @@ class CompanySettings {
         document.getElementById('invoicePrefixInput').value = settings.invoicePrefix || 'INV';
         document.getElementById('invoiceStartNumberInput').value = settings.invoiceStartNumber || 1;
         document.getElementById('taxRateInput').value = settings.taxRate || 0;
+        
+        // Populate brand color
+        const brandColor = settings.brandColor || '#1e3a8a';
+        document.getElementById('brandColorInput').value = brandColor;
+        document.getElementById('brandColorText').value = brandColor;
+        CompanySettings.updateColorPreview(brandColor);
+        
+        // Set up color picker event listeners
+        CompanySettings.setupColorPickerEvents();
     }
 
     // Save settings from the form
@@ -258,6 +299,7 @@ class CompanySettings {
             invoicePrefix: document.getElementById('invoicePrefixInput').value || 'INV',
             invoiceStartNumber: parseInt(document.getElementById('invoiceStartNumberInput').value) || 1,
             taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0,
+            brandColor: document.getElementById('brandColorInput').value || '#1e3a8a',
             logo: settings.logo // Preserve current logo (updated through separate upload process)
         };
         
@@ -513,6 +555,52 @@ class CompanySettings {
             } catch (error) {
                 alert(`Error deleting profile: ${error.message}`);
             }
+        }
+    }
+
+    // Setup color picker event listeners
+    static setupColorPickerEvents() {
+        const colorPicker = document.getElementById('brandColorInput');
+        const colorText = document.getElementById('brandColorText');
+        
+        if (!colorPicker || !colorText) return;
+
+        // Remove existing event listeners to prevent duplicates
+        colorPicker.removeEventListener('input', CompanySettings.handleColorChange);
+        colorText.removeEventListener('input', CompanySettings.handleColorTextChange);
+        
+        // Add event listeners
+        colorPicker.addEventListener('input', CompanySettings.handleColorChange);
+        colorText.addEventListener('input', CompanySettings.handleColorTextChange);
+    }
+
+    // Handle color picker change
+    static handleColorChange(event) {
+        const color = event.target.value;
+        document.getElementById('brandColorText').value = color;
+        CompanySettings.updateColorPreview(color);
+    }
+
+    // Handle color text input change
+    static handleColorTextChange(event) {
+        const color = event.target.value;
+        // Validate hex color format
+        if (/^#[0-9A-F]{6}$/i.test(color)) {
+            document.getElementById('brandColorInput').value = color;
+            CompanySettings.updateColorPreview(color);
+        }
+    }
+
+    // Update color preview
+    static updateColorPreview(color) {
+        const previewCompanyName = document.getElementById('previewCompanyName');
+        const previewInvoiceTitle = document.getElementById('previewInvoiceTitle');
+        
+        if (previewCompanyName) {
+            previewCompanyName.style.color = color;
+        }
+        if (previewInvoiceTitle) {
+            previewInvoiceTitle.style.color = color;
         }
     }
 }

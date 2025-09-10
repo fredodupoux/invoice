@@ -42,7 +42,8 @@ class InvoiceStorageManager {
                 website: '',
                 taxRate: 0,
                 invoicePrefix: 'INV',
-                invoiceStartNumber: 1
+                invoiceStartNumber: 1,
+                brandColor: '#1e3a8a'
             };
             localStorage.setItem(this.COMPANY_KEY, JSON.stringify(defaultCompany));
         }
