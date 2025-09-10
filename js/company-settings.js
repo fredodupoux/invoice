@@ -282,13 +282,13 @@ class CompanySettings {
     static resetToDefaults() {
         if (confirm('Reset all company settings to defaults? This cannot be undone.')) {
             const defaultSettings = {
-                name: 'US AGRICOM',
-                logo: 'assets/images/usa-logo.png',
-                address: '',
-                phone: '',
-                email: '',
-                website: '',
-                taxRate: 0,
+                name: 'Your Company Name',
+                logo: 'assets/images/faktu-logo.png',
+                address: '32 Impasse Saint Marc Freres 23',
+                phone: '509 2257-1122',
+                email: 'info@yourcompany.com',
+                website: 'www.yourcompany.com',
+                taxRate: 10,
                 invoicePrefix: 'INV',
                 invoiceStartNumber: 1
             };
