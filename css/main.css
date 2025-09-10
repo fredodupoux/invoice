@@ -51,6 +51,9 @@ body {
 .logo-section {
     display: flex;
     align-items: flex-start;
+    width: 240px; /* Fixed width to contain the logo + margin */
+    height: 220px; /* Fixed height */
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .company-details {
@@ -63,10 +66,11 @@ body {
 }
 
 .logo {
-    width: 220px;
-    height: 220px;
+    width: 220px !important;
+    height: 220px !important;
     margin-right: 20px;
-    object-fit: contain; /* Maintains aspect ratio within the specified dimensions */
+    object-fit: contain !important; /* Maintains aspect ratio within the specified dimensions */
+    display: block;
     /* border: 1px solid #ddd; Optional: adds a subtle border */
 }
 
@@ -372,4 +376,39 @@ body {
     .container { box-shadow: none; }
     .draft-modal { display: none !important; }
     .save-draft-btn, .drafts-btn { display: none !important; }
+}
+
+/* Logo Upload Styling */
+.logo-upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.current-logo-preview {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.current-logo-preview img {
+    max-width: 150px;
+    max-height: 100px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    background-color: #f9f9f9;
+}
+
+.logo-upload-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.form-text {
+    color: #666;
+    font-size: 12px;
+    margin-top: 5px;
 }

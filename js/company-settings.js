@@ -37,9 +37,15 @@ class CompanySettings {
         }
 
         // Update logo (if element exists)
-        const logoElement = document.querySelector('.logo img');
+        const logoElement = document.querySelector('.logo');
         if (logoElement && settings.logo) {
             logoElement.src = settings.logo;
+        }
+        
+        // Also update printable section logo
+        const printableLogoElement = document.querySelector('#printableInvoice .logo');
+        if (printableLogoElement && settings.logo) {
+            printableLogoElement.src = settings.logo;
         }
 
         // Update company info section (create if doesn't exist)
@@ -137,6 +143,20 @@ class CompanySettings {
                         <div class="form-section">
                             <h3>Company Information</h3>
                             <div class="form-group">
+                                <label for="companyLogoInput">Company Logo:</label>
+                                <div class="logo-upload-section">
+                                    <div class="current-logo-preview">
+                                        <img id="logoPreview" src="" alt="Current Logo" style="max-width: 150px; max-height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; display: none;">
+                                    </div>
+                                    <div class="logo-upload-controls">
+                                        <input type="file" id="companyLogoInput" accept="image/*" style="display: none;">
+                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.selectLogo()">Choose Logo</button>
+                                        <button type="button" class="btn btn-outline" onclick="CompanySettings.removeLogo()" id="removeLogoBtn" style="display: none;">Remove Logo</button>
+                                    </div>
+                                    <small class="form-text">Supported formats: JPG, PNG, GIF. Maximum size: 2MB.</small>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label for="companyNameInput">Company Name:</label>
                                 <input type="text" id="companyNameInput" class="form-control" placeholder="Enter company name">
                             </div>
@@ -195,6 +215,18 @@ class CompanySettings {
     static populateSettingsForm() {
         const settings = window.companySettings.getSettings();
         
+        // Populate logo preview
+        const logoPreview = document.getElementById('logoPreview');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+        if (settings.logo) {
+            logoPreview.src = settings.logo;
+            logoPreview.style.display = 'block';
+            removeLogoBtn.style.display = 'inline-block';
+        } else {
+            logoPreview.style.display = 'none';
+            removeLogoBtn.style.display = 'none';
+        }
+        
         document.getElementById('companyNameInput').value = settings.name || '';
         document.getElementById('companyAddressInput').value = settings.address || '';
         document.getElementById('companyPhoneInput').value = settings.phone || '';
@@ -207,6 +239,7 @@ class CompanySettings {
 
     // Save settings from the form
     static saveSettings() {
+        const settings = window.companySettings.getSettings();
         const newSettings = {
             name: document.getElementById('companyNameInput').value,
             address: document.getElementById('companyAddressInput').value,
@@ -215,7 +248,8 @@ class CompanySettings {
             website: document.getElementById('companyWebsiteInput').value,
             invoicePrefix: document.getElementById('invoicePrefixInput').value || 'INV',
             invoiceStartNumber: parseInt(document.getElementById('invoiceStartNumberInput').value) || 1,
-            taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0
+            taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0,
+            logo: settings.logo // Preserve current logo (updated through separate upload process)
         };
         
         window.companySettings.updateSettings(newSettings);
@@ -229,7 +263,7 @@ class CompanySettings {
         if (confirm('Reset all company settings to defaults? This cannot be undone.')) {
             const defaultSettings = {
                 name: 'US AGRICOM',
-                logo: '/assets/images/usa-logo.png',
+                logo: 'assets/images/usa-logo.png',
                 address: '',
                 phone: '',
                 email: '',
@@ -243,6 +277,79 @@ class CompanySettings {
             CompanySettings.populateSettingsForm();
             
             alert('Settings reset to defaults!');
+        }
+    }
+
+    // Open file selector for logo upload
+    static selectLogo() {
+        const fileInput = document.getElementById('companyLogoInput');
+        fileInput.click();
+        
+        // Set up file change handler if not already done
+        if (!fileInput.hasEventListener) {
+            fileInput.addEventListener('change', CompanySettings.handleLogoUpload);
+            fileInput.hasEventListener = true;
+        }
+    }
+
+    // Handle logo file upload
+    static handleLogoUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file (JPG, PNG, GIF).');
+            return;
+        }
+
+        // Validate file size (2MB limit)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File size must be less than 2MB.');
+            return;
+        }
+
+        // Read file as data URL
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const logoDataUrl = e.target.result;
+            
+            // Update preview
+            const logoPreview = document.getElementById('logoPreview');
+            const removeLogoBtn = document.getElementById('removeLogoBtn');
+            logoPreview.src = logoDataUrl;
+            logoPreview.style.display = 'block';
+            removeLogoBtn.style.display = 'inline-block';
+            
+            // Save logo to settings immediately
+            const currentSettings = window.companySettings.getSettings();
+            currentSettings.logo = logoDataUrl;
+            window.companySettings.updateSettings(currentSettings);
+            
+            // Clear the file input for future uploads
+            event.target.value = '';
+        };
+        
+        reader.onerror = function() {
+            alert('Error reading file. Please try again.');
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    // Remove current logo
+    static removeLogo() {
+        if (confirm('Remove the current logo?')) {
+            const logoPreview = document.getElementById('logoPreview');
+            const removeLogoBtn = document.getElementById('removeLogoBtn');
+            
+            logoPreview.style.display = 'none';
+            removeLogoBtn.style.display = 'none';
+            
+            // Update settings
+            const currentSettings = window.companySettings.getSettings();
+            currentSettings.logo = '';
+            window.companySettings.updateSettings(currentSettings);
         }
     }
 }

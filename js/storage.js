@@ -34,7 +34,7 @@ class InvoiceStorageManager {
         if (!localStorage.getItem(this.COMPANY_KEY)) {
             const defaultCompany = {
                 name: 'US AGRICOM',
-                logo: '/assets/images/usa-logo.png',
+                logo: 'assets/images/usa-logo.png',
                 address: '',
                 phone: '',
                 email: '',
