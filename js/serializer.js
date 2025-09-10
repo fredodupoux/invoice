@@ -20,8 +20,8 @@ class InvoiceSerializer {
             grandTotal: document.getElementById('grandTotal')?.textContent || '$0.00',
             
             // Metadata
-            companyName: document.querySelector('.company-name')?.textContent || 'US AGRICOM',
-            pageTitle: document.getElementById('pageTitle')?.textContent || 'US AGRICOM Invoice Template'
+            companyName: document.querySelector('.company-name')?.textContent || 'Your Company Name',
+            pageTitle: document.getElementById('pageTitle')?.textContent || 'Faktu Invoice Template'
         };
         
         // Collect all invoice items

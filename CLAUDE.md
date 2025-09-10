@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a single-page invoice generator web application built with vanilla HTML, CSS, and JavaScript. The application creates professional invoices for US AGRICOM with functionality for dynamic row management, CSV import/export, and PDF generation.
+This is a single-page invoice generator web application built with vanilla HTML, CSS, and JavaScript. The application creates professional invoices with functionality for dynamic row management, CSV import/export, and PDF generation.
 
 ## Development Commands
 
@@ -24,7 +24,7 @@ The entire application is contained in a single `index.html` file that includes:
 - **Invoice form management**: Dynamic row addition/removal for invoice items
 - **Calculation engine**: Automatic calculation of row totals and grand totals with tax
 - **Data persistence**: CSV import/export functionality for saving and loading invoice data
-- **PDF generation**: Uses html2pdf.js library to generate downloadable PDF invoices
+- **PDF generation**: Uses browser's native print functionality to generate PDF invoices
 - **Print optimization**: Specific CSS rules for clean print output
 
 ## Key JavaScript Functions
@@ -38,7 +38,6 @@ The entire application is contained in a single `index.html` file that includes:
 
 ## Dependencies
 
-- **html2pdf.js** (v0.11.2): PDF generation from HTML content
 - **live-server** (v1.2.2): Development server with auto-reload (dev dependency only)
 
 ## Important Implementation Notes

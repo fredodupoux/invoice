@@ -290,7 +290,7 @@ class CompanySettings {
                 website: 'www.yourcompany.com',
                 taxRate: 10,
                 invoicePrefix: 'INV',
-                invoiceStartNumber: 1
+                invoiceStartNumber: 1001
             };
             
             window.companySettings.updateSettings(defaultSettings);

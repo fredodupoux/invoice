@@ -91,9 +91,9 @@ class InvoiceCore {
     updatePageTitle() {
         const invoiceNumber = document.getElementById('invoiceNumber').value;
         if (invoiceNumber) {
-            document.getElementById('pageTitle').textContent = `Invoice ${invoiceNumber} - US AGRICOM`;
+            document.getElementById('pageTitle').textContent = `Invoice ${invoiceNumber} - Faktu`;
         } else {
-            document.getElementById('pageTitle').textContent = 'US AGRICOM Invoice Template';
+            document.getElementById('pageTitle').textContent = 'Faktu Invoice Template';
         }
     }
 

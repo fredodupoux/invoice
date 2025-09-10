@@ -291,8 +291,8 @@ class InvoiceApp {
 
     // Print current invoice and create new
     printCurrentAndCreateNew() {
-        this.pdfGenerator.generatePDF();
-        // Wait a moment for PDF generation, then clear form
+        window.print();
+        // Wait a moment for print dialog, then clear form
         setTimeout(() => {
             this.clearInvoiceForm();
             this.closeNewInvoiceModal();
