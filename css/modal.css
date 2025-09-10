@@ -228,3 +228,13 @@
     from { transform: translateY(-20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* Print styles - hide all modals and UI elements when printing */
+@media print {
+    .draft-modal,
+    .draft-modal-content,
+    .settings-form,
+    .close-modal {
+        display: none !important;
+    }
+}

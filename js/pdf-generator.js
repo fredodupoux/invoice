@@ -10,100 +10,116 @@ class PDFGenerator {
 
     async generatePDF() {
         try {
-            // Copy current form data to printable section
-            this.copyFormDataToPrintableSection();
-            
-            const element = document.getElementById(this.printElementId);
+            // Use the main invoice container for PDF generation to match browser print
+            const element = document.querySelector('.container');
             if (!element) {
-                console.error('Printable invoice element not found');
+                console.error('Invoice container not found');
                 return;
             }
 
-            // Show the printable section temporarily
-            element.style.display = 'block';
-
+            // Get invoice number for filename
             const invoiceNumber = document.getElementById('invoiceNumber')?.value || 'invoice';
             
+            // Temporarily hide UI elements for PDF generation
+            this.hideUIElements();
+            
             const options = {
-                margin: 1,
+                margin: [0.5, 0.5, 0.5, 0.5], // Reduced margins
                 filename: `invoice_${invoiceNumber}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    allowTaint: false
+                },
+                jsPDF: { 
+                    unit: 'in', 
+                    format: 'letter', 
+                    orientation: 'portrait',
+                    putOnlyUsedFonts: true
+                }
             };
 
             await html2pdf().set(options).from(element).save();
             
-            // Hide the printable section again
-            element.style.display = 'none';
+            // Restore UI elements
+            this.showUIElements();
+            
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Error generating PDF. Please try again.');
+            // Make sure to restore UI elements even on error
+            this.showUIElements();
         }
     }
 
-    copyFormDataToPrintableSection() {
-        // Copy header information
-        document.getElementById('printInvoiceDate').textContent = 
-            document.getElementById('invoiceDate').value || '';
-        document.getElementById('printInvoiceNumber').textContent = 
-            document.getElementById('invoiceNumber').value || '';
-        document.getElementById('printSoldTo').textContent = 
-            document.getElementById('soldTo').value || '';
-        document.getElementById('printConsignedTo').textContent = 
-            document.getElementById('consignedTo').value || '';
-
-        // Copy invoice items
-        const sourceItems = document.querySelectorAll('#invoiceItems .table-row');
-        const printItemsContainer = document.getElementById('printInvoiceItems');
-        printItemsContainer.innerHTML = '';
-
-        sourceItems.forEach(row => {
-            const qty = row.querySelector('.qty-input')?.value || '';
-            const unit = row.querySelector('.unit-input')?.value || '';
-            const description = row.querySelector('.description-input')?.value || '';
-            const price = row.querySelector('.price-input')?.value || '';
-            const total = row.querySelector('.total-cell')?.textContent || '';
-
-            // Only add rows that have some content
-            if (qty || unit || description || price) {
-                const printRow = document.createElement('tr');
-                printRow.innerHTML = `
-                    <td>${qty}</td>
-                    <td>${unit}</td>
-                    <td>${description}</td>
-                    <td>$${price ? parseFloat(price).toFixed(2) : '0.00'}</td>
-                    <td>${total}</td>
-                `;
-                printItemsContainer.appendChild(printRow);
+    hideUIElements() {
+        // Store original display values and hide UI elements
+        this.hiddenElements = [];
+        
+        const elementsToHide = [
+            '.menu-toggle',
+            '.new-invoice-toggle', 
+            '.side-menu',
+            '.menu-overlay',
+            '#autoSaveStatus',
+            '.row-controls'
+        ];
+        
+        elementsToHide.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                if (el.style.display !== 'none') {
+                    this.hiddenElements.push({
+                        element: el,
+                        originalDisplay: el.style.display || ''
+                    });
+                    el.style.display = 'none';
+                }
+            });
+        });
+        
+        // Style form elements to look like plain text
+        const formElements = document.querySelectorAll('input, textarea, button, select');
+        formElements.forEach(el => {
+            if (el.type !== 'button' && !el.classList.contains('menu-button')) {
+                this.hiddenElements.push({
+                    element: el,
+                    originalBorder: el.style.border || '',
+                    originalBackground: el.style.background || '',
+                    originalBoxShadow: el.style.boxShadow || '',
+                    originalOutline: el.style.outline || ''
+                });
+                el.style.border = 'none';
+                el.style.background = 'transparent';
+                el.style.boxShadow = 'none';
+                el.style.outline = 'none';
             }
         });
+    }
 
-        // Copy grand total
-        document.getElementById('printGrandTotal').textContent = 
-            document.getElementById('grandTotal').textContent || '$0.00';
+    showUIElements() {
+        // Restore original values
+        if (this.hiddenElements) {
+            this.hiddenElements.forEach(item => {
+                if (item.originalDisplay !== undefined) {
+                    item.element.style.display = item.originalDisplay;
+                }
+                if (item.originalBorder !== undefined) {
+                    item.element.style.border = item.originalBorder;
+                    item.element.style.background = item.originalBackground;
+                    item.element.style.boxShadow = item.originalBoxShadow;
+                    item.element.style.outline = item.originalOutline;
+                }
+            });
+            this.hiddenElements = [];
+        }
     }
 
     printInvoice() {
-        // Copy form data to printable section
-        this.copyFormDataToPrintableSection();
-        
-        const printContent = document.getElementById(this.printElementId);
-        if (!printContent) {
-            console.error('Printable invoice element not found');
-            return;
-        }
-
-        const originalContent = document.body.innerHTML;
-        
-        document.body.innerHTML = printContent.outerHTML;
+        // Use browser's native print function for consistent layout
         window.print();
-        document.body.innerHTML = originalContent;
-        
-        // Reinitialize the app after printing
-        if (window.invoiceApp) {
-            window.invoiceApp.initialize();
-        }
     }
 }
 

@@ -28,21 +28,6 @@ body {
     justify-content: flex-start;
 }
 
-/* Print styles for the printable invoice section */
-.print-value {
-    display: inline-block;
-    min-height: 20px;
-    padding: 5px;
-    border-bottom: 1px solid #ccc;
-    min-width: 200px;
-    white-space: pre-wrap;
-}
-
-#printableInvoice {
-    box-shadow: none;
-    background-color: white;
-}
-
 .header {
     display: flex;
     justify-content: space-between;
@@ -374,11 +359,107 @@ body {
 }
 
 @media print {
-    .print-btn { display: none; }
-    body { background-color: white; margin: 0; }
-    .container { box-shadow: none; }
-    .draft-modal { display: none !important; }
+    /* Hide all UI elements - only show invoice content */
+    .print-btn { display: none !important; }
     .save-draft-btn, .drafts-btn { display: none !important; }
+    .draft-modal { display: none !important; }
+    .menu-toggle { display: none !important; }
+    .new-invoice-toggle { display: none !important; }
+    .side-menu { display: none !important; }
+    .menu-overlay { display: none !important; }
+    .auto-save-status { display: none !important; }
+    #autoSaveStatus { display: none !important; }
+    .row-controls { display: none !important; }
+    .profile-card { display: none !important; }
+    .form-actions { display: none !important; }
+    .button-container { display: none !important; }
+    
+    /* Hide all fixed positioned elements */
+    *[style*="position: fixed"] { display: none !important; }
+    
+    /* Clean up page layout for printing */
+    body { 
+        background-color: white !important; 
+        margin: 0 !important; 
+        padding: 0 !important;
+    }
+    
+    .container { 
+        box-shadow: none !important; 
+        margin: 0 !important;
+        max-width: none !important;
+        padding: 20px !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure invoice content is clearly visible */
+    .invoice-container {
+        width: 100% !important;
+    }
+    
+    /* Hide any floating elements */
+    .floating-action-btn { display: none !important; }
+    
+    /* Ensure table prints properly */
+    table {
+        page-break-inside: avoid;
+    }
+    
+    /* Hide any form elements that might appear */
+    input, textarea, select, button {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+    }
+    
+    /* Style inputs to look like plain text when printing */
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea {
+        color: #000 !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        padding: 2px !important;
+        margin: 0 !important;
+    }
+    
+    /* Clean up table formatting for print */
+    .invoice-table th,
+    .invoice-table td {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+    }
+
+    .invoice-table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    /* Remove extra spacing and borders from sections */
+    .top-section,
+    .middle-section {
+        border: none !important;
+        margin: 20px 0 !important;
+    }
+
+    .date-section,
+    .invoice-no-section,
+    .sold-to,
+    .consigned-to {
+        border: 1px solid #000 !important;
+        padding: 10px !important;
+        margin: 10px 0 !important;
+    }    /* Ensure clean print layout */
+    * {
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
 }
 
 /* Logo Upload Styling */
@@ -683,4 +764,121 @@ body {
 /* Make first cell (QTY) position relative for absolute positioning of controls */
 .invoice-row td:first-child {
     position: relative;
+}
+
+/* Company Profiles Styles */
+.profile-actions-section {
+    margin-top: 20px;
+}
+
+.profile-actions-section hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+}
+
+.profile-actions-section h3 {
+    color: #1e3a8a;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.profile-form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profiles-content {
+    padding: 20px;
+}
+
+.profiles-actions {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.profiles-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.no-profiles {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+.no-profiles p {
+    margin: 10px 0;
+}
+
+.profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-color: #f9fafb;
+    transition: background-color 0.2s;
+}
+
+.profile-card:hover {
+    background-color: #f3f4f6;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    margin: 0 0 5px 0;
+    color: #1e3a8a;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.profile-details {
+    margin: 0 0 5px 0;
+    color: #4b5563;
+    font-size: 14px;
+}
+
+.profile-meta {
+    margin: 0;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Responsive design for profiles */
+@media (max-width: 600px) {
+    .profile-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .profile-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .profile-form-actions {
+        flex-direction: column;
+    }
 }

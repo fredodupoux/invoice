@@ -203,6 +203,15 @@ class CompanySettings {
                             <button type="button" class="btn btn-secondary" onclick="CompanySettings.closeModal()">Cancel</button>
                             <button type="button" class="btn btn-outline" onclick="CompanySettings.resetToDefaults()">Reset to Defaults</button>
                         </div>
+                        
+                        <div class="profile-actions-section">
+                            <hr>
+                            <h3>Company Profiles</h3>
+                            <div class="profile-form-actions">
+                                <button type="button" class="btn btn-outline" onclick="CompanySettings.saveAsProfile()">💾 Save as Profile</button>
+                                <button type="button" class="btn btn-outline" onclick="CompanySettings.openProfilesModal(); CompanySettings.closeModal();">📂 Manage Profiles</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -350,6 +359,160 @@ class CompanySettings {
             const currentSettings = window.companySettings.getSettings();
             currentSettings.logo = '';
             window.companySettings.updateSettings(currentSettings);
+        }
+    }
+
+    // Save current company settings as a profile
+    static saveAsProfile() {
+        const profileName = prompt('Enter a name for this company profile:');
+        if (!profileName || profileName.trim() === '') {
+            return;
+        }
+
+        try {
+            const currentSettings = window.companySettings.getSettings();
+            const profileId = window.storageManager.saveCompanyProfile(currentSettings, profileName.trim());
+            alert(`Company profile "${profileName}" saved successfully!`);
+            
+            // Refresh profiles list if modal is open
+            const profilesModal = document.getElementById('companyProfilesModal');
+            if (profilesModal && profilesModal.classList.contains('show')) {
+                CompanySettings.populateProfilesList();
+            }
+        } catch (error) {
+            alert(`Error saving profile: ${error.message}`);
+        }
+    }
+
+    // Open company profiles manager
+    static openProfilesModal() {
+        let modal = document.getElementById('companyProfilesModal');
+        if (!modal) {
+            CompanySettings.createProfilesModal();
+            modal = document.getElementById('companyProfilesModal');
+        }
+        
+        CompanySettings.populateProfilesList();
+        modal.classList.add('show');
+    }
+
+    // Close company profiles modal
+    static closeProfilesModal() {
+        const modal = document.getElementById('companyProfilesModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    // Create the company profiles modal
+    static createProfilesModal() {
+        const modalHTML = `
+            <div id="companyProfilesModal" class="draft-modal">
+                <div class="draft-modal-content">
+                    <div class="draft-modal-header">
+                        <h2 class="draft-modal-title">Company Profiles</h2>
+                        <button class="close-modal" onclick="CompanySettings.closeProfilesModal()">&times;</button>
+                    </div>
+                    <div class="profiles-content">
+                        <div class="profiles-actions">
+                            <button type="button" class="btn btn-primary" onclick="CompanySettings.saveAsProfile()">
+                                💾 Save Current as Profile
+                            </button>
+                        </div>
+                        <div class="profiles-list" id="profilesList">
+                            <!-- Profiles will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Populate the profiles list
+    static populateProfilesList() {
+        const profilesList = document.getElementById('profilesList');
+        if (!profilesList) return;
+
+        const profiles = window.storageManager.getAllCompanyProfiles();
+        
+        if (profiles.length === 0) {
+            profilesList.innerHTML = `
+                <div class="no-profiles">
+                    <p>No saved company profiles yet.</p>
+                    <p>Save your current company settings as a profile to get started!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const profilesHTML = profiles.map(profile => `
+            <div class="profile-card" data-profile-id="${profile.id}">
+                <div class="profile-info">
+                    <h4 class="profile-name">${profile.name || 'Unnamed Company'}</h4>
+                    <p class="profile-details">
+                        ${profile.address ? profile.address.split('\n')[0] : 'No address'}
+                        ${profile.phone ? `• ${profile.phone}` : ''}
+                    </p>
+                    <p class="profile-meta">
+                        Saved: ${new Date(profile.savedAt).toLocaleDateString()}
+                        ${profile.invoicePrefix ? `• Prefix: ${profile.invoicePrefix}` : ''}
+                    </p>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CompanySettings.loadProfile('${profile.id}')">
+                        📂 Load
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="CompanySettings.deleteProfile('${profile.id}')">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        profilesList.innerHTML = profilesHTML;
+    }
+
+    // Load a company profile
+    static loadProfile(profileId) {
+        if (confirm('Load this company profile? This will replace your current company settings.')) {
+            try {
+                const loadedSettings = window.storageManager.loadCompanyProfile(profileId);
+                if (loadedSettings) {
+                    // Apply the loaded settings
+                    window.companySettings.applySettingsToInvoice(loadedSettings);
+                    
+                    // Update the company settings form if it's open
+                    const settingsModal = document.getElementById('companySettingsModal');
+                    if (settingsModal && settingsModal.classList.contains('show')) {
+                        CompanySettings.populateSettingsForm();
+                    }
+                    
+                    alert('Company profile loaded successfully!');
+                    CompanySettings.closeProfilesModal();
+                } else {
+                    alert('Error loading company profile.');
+                }
+            } catch (error) {
+                alert(`Error loading profile: ${error.message}`);
+            }
+        }
+    }
+
+    // Delete a company profile
+    static deleteProfile(profileId) {
+        const profile = window.storageManager.getCompanyProfile(profileId);
+        if (!profile) return;
+
+        if (confirm(`Delete the company profile "${profile.name}"? This cannot be undone.`)) {
+            try {
+                window.storageManager.deleteCompanyProfile(profileId);
+                alert('Company profile deleted successfully!');
+                CompanySettings.populateProfilesList();
+            } catch (error) {
+                alert(`Error deleting profile: ${error.message}`);
+            }
         }
     }
 }

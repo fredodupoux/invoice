@@ -78,73 +78,6 @@
         <!-- Buttons will be added here by JavaScript -->
     </div>
 
-    <!-- Printable Invoice Section (hidden for PDF generation) -->
-    <div id="printableInvoice" class="container" style="display: none;">
-        <div class="header">
-            <div class="logo-section">
-                <img src="assets/images/usa-logo.png" alt="Company Logo" class="logo">                
-            </div>
-            <div class="company-details">
-                <div class="company-name">US AGRICOM</div>
-                <div class="company-info">
-                    123 Business St<br>
-                    City, State 12345<br>
-                    Phone: (555) 123-4567<br>
-                    Email: info@usagricom.com
-                </div>
-            </div>
-        </div>
-        
-        <h2 class="invoice-title">INVOICE</h2>
-        
-        <div class="top-section">
-            <div class="date-section">
-                <div class="section-label">Date:</div>
-                <span id="printInvoiceDate" class="print-value"></span>
-            </div>
-            <div class="invoice-no-section">
-                <div class="section-label">Invoice No:</div>
-                <span id="printInvoiceNumber" class="print-value"></span>
-            </div>
-        </div>
-        
-        <div class="middle-section">
-            <div class="sold-to">
-                <div class="section-label">Sold To:</div>
-                <div id="printSoldTo" class="print-value"></div>
-            </div>
-            <div class="consigned-to">
-                <div class="section-label">Consigned To:</div>
-                <div id="printConsignedTo" class="print-value"></div>
-            </div>
-        </div>
-        
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th>QTY</th>
-                    <th>Unit</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="printInvoiceItems">
-                <!-- Dynamic invoice items will be added here -->
-            </tbody>
-        </table>
-        
-        <table class="invoice-table" style="margin-top: 20px;">
-            <tr class="grand-total-row">
-                <td></td>
-                <td></td>
-                <td style="text-align: right; font-weight: bold; padding-right: 12px;">GRAND TOTAL:</td>
-                <td style="font-weight: bold; background-color: #f0f0f0;"></td>
-                <td id="printGrandTotal" style="font-weight: bold; background-color: #f0f0f0;">$0.00</td>
-            </tr>
-        </table>
-    </div>
-
     <!-- Draft Management Modal -->
     <div id="draftModal" class="draft-modal">
         <div class="draft-modal-content">
@@ -169,11 +102,7 @@
     <script src="js/company-settings.js"></script>
     <script src="js/invoice-core.js"></script>
     <script src="js/csv-handler.js"></script>
-    <script src="js/pdf-generator.js"></script>
     <script src="js/app.js"></script>
-    
-    <!-- HTML2PDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <!-- Application Initialization -->
     <script>

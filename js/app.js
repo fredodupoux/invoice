@@ -12,7 +12,6 @@ class InvoiceApp {
         this.companySettings = null;
         this.invoiceCore = null;
         this.csvHandler = null;
-        this.pdfGenerator = null;
         this.testStorage = null;
         
         this.initialized = false;
@@ -33,7 +32,6 @@ class InvoiceApp {
             // Initialize new core modules
             this.invoiceCore = new InvoiceCore();
             this.csvHandler = new CSVHandler();
-            this.pdfGenerator = new PDFGenerator();
 
             // Initialize invoice core first
             this.invoiceCore.initialize();
@@ -48,14 +46,12 @@ class InvoiceApp {
             window.companySettings = this.companySettings;
             window.invoiceCore = this.invoiceCore;
             window.csvHandler = this.csvHandler;
-            window.pdfGenerator = this.pdfGenerator;
 
             // Set up global function references for backward compatibility
             window.addRow = () => this.invoiceCore.addRow();
             window.removeRow = () => this.invoiceCore.removeRow();
             window.exportToCSV = () => this.csvHandler.exportToCSV();
             window.openCSV = () => this.csvHandler.triggerFileInput();
-            window.generatePDF = () => this.pdfGenerator.generatePDF();
 
             // Apply company settings to current invoice
             this.companySettings.applySettingsToInvoice();
@@ -117,10 +113,10 @@ class InvoiceApp {
                         📂 Open Invoice
                     </button>
                     <button class="menu-button" onclick="invoiceApp.csvHandler.exportToCSV()">
-                        💾 Save As CSV
+                        💾 Export As CSV
                     </button>
-                    <button class="menu-button" onclick="invoiceApp.pdfGenerator.generatePDF()">
-                        🖨️ Print Invoice
+                    <button class="menu-button" onclick="window.print()">
+                        🖨️ Print / Save As PDF
                     </button>
                 </div>
                 
@@ -138,6 +134,9 @@ class InvoiceApp {
                     <h3>Settings</h3>
                     <button class="menu-button" onclick="CompanySettings.openModal(); invoiceApp.closeSideMenu();">
                         ⚙️ Company Settings
+                    </button>
+                    <button class="menu-button" onclick="CompanySettings.openProfilesModal(); invoiceApp.closeSideMenu();">
+                        🏢 Company Profiles
                     </button>
                 </div>
             </div>
@@ -342,7 +341,7 @@ class InvoiceApp {
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
                 e.preventDefault();
-                this.pdfGenerator.generatePDF();
+                window.print();
             }
             // Escape to close side menu and modals
             if (e.key === 'Escape') {

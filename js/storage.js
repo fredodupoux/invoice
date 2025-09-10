@@ -8,6 +8,7 @@ class InvoiceStorageManager {
         this.STORAGE_KEY = 'invoice_drafts';
         this.SETTINGS_KEY = 'invoice_settings';
         this.COMPANY_KEY = 'company_settings';
+        this.COMPANY_PROFILES_KEY = 'company_profiles';
         this.VERSION = '1.0.0';
         this.initializeStorage();
     }
@@ -44,6 +45,14 @@ class InvoiceStorageManager {
                 invoiceStartNumber: 1
             };
             localStorage.setItem(this.COMPANY_KEY, JSON.stringify(defaultCompany));
+        }
+
+        if (!localStorage.getItem(this.COMPANY_PROFILES_KEY)) {
+            const initialProfiles = {
+                profiles: {},
+                version: this.VERSION
+            };
+            localStorage.setItem(this.COMPANY_PROFILES_KEY, JSON.stringify(initialProfiles));
         }
     }
 
@@ -181,6 +190,90 @@ class InvoiceStorageManager {
         if (data.company) {
             localStorage.setItem(this.COMPANY_KEY, JSON.stringify(data.company));
         }
+    }
+
+    // Generate unique ID for company profiles
+    generateCompanyProfileId() {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 6);
+        return `company_${timestamp}_${random}`;
+    }
+
+    // Save a company profile
+    saveCompanyProfile(profileData, profileName = null) {
+        try {
+            const storage = this.getCompanyProfiles();
+            const name = profileName || profileData.name || 'Unnamed Company';
+            const id = this.generateCompanyProfileId();
+            
+            storage.profiles[id] = {
+                id: id,
+                name: name,
+                ...profileData,
+                savedAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem(this.COMPANY_PROFILES_KEY, JSON.stringify(storage));
+            return id;
+        } catch (e) {
+            console.error('Failed to save company profile:', e);
+            if (e.name === 'QuotaExceededError') {
+                throw new Error('Storage quota exceeded. Please delete some company profiles.');
+            }
+            throw e;
+        }
+    }
+
+    // Get all company profiles
+    getAllCompanyProfiles() {
+        const storage = this.getCompanyProfiles();
+        return Object.values(storage.profiles);
+    }
+
+    // Get a specific company profile
+    getCompanyProfile(profileId) {
+        const storage = this.getCompanyProfiles();
+        return storage.profiles[profileId] || null;
+    }
+
+    // Delete a company profile
+    deleteCompanyProfile(profileId) {
+        const storage = this.getCompanyProfiles();
+        delete storage.profiles[profileId];
+        localStorage.setItem(this.COMPANY_PROFILES_KEY, JSON.stringify(storage));
+    }
+
+    // Get company profiles storage data
+    getCompanyProfiles() {
+        const data = localStorage.getItem(this.COMPANY_PROFILES_KEY);
+        return data ? JSON.parse(data) : { profiles: {}, version: this.VERSION };
+    }
+
+    // Load a company profile as current settings
+    loadCompanyProfile(profileId) {
+        const profile = this.getCompanyProfile(profileId);
+        if (profile) {
+            // Extract only the company settings, excluding metadata
+            const { id, savedAt, ...companySettings } = profile;
+            this.updateCompanySettings(companySettings);
+            return companySettings;
+        }
+        return null;
+    }
+
+    // Update an existing company profile
+    updateCompanyProfile(profileId, profileData) {
+        const storage = this.getCompanyProfiles();
+        if (storage.profiles[profileId]) {
+            storage.profiles[profileId] = {
+                ...storage.profiles[profileId],
+                ...profileData,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem(this.COMPANY_PROFILES_KEY, JSON.stringify(storage));
+            return storage.profiles[profileId];
+        }
+        return null;
     }
 }
 
