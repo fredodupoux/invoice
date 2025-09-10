@@ -1,0 +1,375 @@
+/* Main Invoice Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f5f5f5;
+}
+
+/* Button Container Organization */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.button-container {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-start;
+}
+
+/* Print styles for the printable invoice section */
+.print-value {
+    display: inline-block;
+    min-height: 20px;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    min-width: 200px;
+    white-space: pre-wrap;
+}
+
+#printableInvoice {
+    box-shadow: none;
+    background-color: white;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    /* padding-top: 10px; */
+}
+
+.logo-section {
+    display: flex;
+    align-items: flex-start;
+}
+
+.company-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+    text-align: right;
+    margin-top: 30px; /* Push company name down */
+}
+
+.logo {
+    width: 220px;
+    height: 220px;
+    margin-right: 20px;
+    object-fit: contain; /* Maintains aspect ratio within the specified dimensions */
+    /* border: 1px solid #ddd; Optional: adds a subtle border */
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin: 0 0 5px 0; /* Reduced bottom margin to bring closer to details */
+    /* letter-spacing: 1px; */
+}
+
+.company-info {
+    text-align: right;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.invoice-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin: 20px 0;
+    text-decoration: underline;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.date-section, .invoice-no-section {
+    border: 1px solid #000;
+    padding: 8px;
+    min-width: 150px;
+}
+
+.date-section {
+    margin-right: 20px;
+}
+
+.section-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input-field {
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+/* Center-align input fields in QTY, Unit, and Price columns */
+.invoice-table td:nth-child(1) .input-field,
+.invoice-table td:nth-child(2) .input-field,
+.invoice-table td:nth-child(4) .input-field {
+    text-align: center;
+}
+
+/* Left-align input fields in Description column */
+.invoice-table td:nth-child(3) .input-field {
+    text-align: left;
+}
+
+.middle-section {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+
+.sold-to, .consigned-to {
+    flex: 1;
+    border: 1px solid #000;
+    padding: 10px;
+    min-height: 120px;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+}
+
+.invoice-table th, .invoice-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Specific column widths */
+.invoice-table th:nth-child(1),
+.invoice-table td:nth-child(1) {
+    width: 8%; /* Qty column - smaller */
+    text-align: center;
+}
+
+.invoice-table th:nth-child(2),
+.invoice-table td:nth-child(2) {
+    width: 10%; /* Unit column - smaller */
+    text-align: center;
+}
+
+.invoice-table th:nth-child(3),
+.invoice-table td:nth-child(3) {
+    width: 50%; /* Description column - larger */
+    text-align: left;
+    padding-left: 12px;
+}
+
+.invoice-table th:nth-child(4),
+.invoice-table td:nth-child(4) {
+    width: 15%; /* Price column */
+    text-align: center;
+}
+
+.invoice-table th:nth-child(5),
+.invoice-table td:nth-child(5) {
+    width: 17%; /* Total column */
+    text-align: right;
+    padding-right: 12px;
+}
+
+/* Grand Total Row Styling - Remove Cell Dividers */
+.grand-total-row td {
+    border-left: none !important;
+    border-right: none !important;
+}
+
+.grand-total-row td:first-child {
+    border-left: 1px solid #000 !important;
+}
+
+.grand-total-row td:last-child {
+    border-right: 1px solid #000 !important;
+}
+
+/* Ensure GRAND TOTAL text is properly positioned */
+.grand-total-row td:nth-child(3) {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 12px;
+    border-right: 1px solid #000 !important; /* Add divider after GRAND TOTAL */
+}
+
+/* Ensure Grand Total value is properly positioned */
+.grand-total-row td:nth-child(5) {
+    text-align: right;
+    padding-right: 12px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.invoice-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.total-cell {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.print-btn {
+    background-color: #1e40af;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 5px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    min-width: 100px;
+}
+
+.print-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Consistent button styling for all invoice buttons */
+.save-draft-btn,
+.drafts-btn {
+    background-color: #1e40af !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+    margin: 5px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s ease !important;
+    min-width: 100px !important;
+}
+
+.save-draft-btn:hover,
+.drafts-btn:hover {
+    background-color: #1d4ed8 !important;
+}
+
+/* Form Controls */
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section h3 {
+    color: #1e3a8a;
+    border-bottom: 2px solid #1e3a8a;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #1e3a8a;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1e5a8a;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #1e3a8a;
+    border: 1px solid #1e3a8a;
+}
+
+.btn-outline:hover {
+    background-color: #1e3a8a;
+    color: white;
+}
+
+@media print {
+    .print-btn { display: none; }
+    body { background-color: white; margin: 0; }
+    .container { box-shadow: none; }
+    .draft-modal { display: none !important; }
+    .save-draft-btn, .drafts-btn { display: none !important; }
+}

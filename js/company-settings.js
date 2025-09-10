@@ -1,0 +1,253 @@
+/**
+ * Company Settings Module
+ * Handles company configuration and settings management
+ */
+
+class CompanySettings {
+    constructor(storageManager) {
+        this.storageManager = storageManager;
+    }
+
+    // Get current company settings
+    getSettings() {
+        return this.storageManager.getCompanySettings();
+    }
+
+    // Update company settings
+    updateSettings(newSettings) {
+        const updated = this.storageManager.updateCompanySettings(newSettings);
+        this.applySettingsToInvoice(updated);
+        return updated;
+    }
+
+    // Apply company settings to the current invoice display
+    applySettingsToInvoice(settings) {
+        if (!settings) settings = this.getSettings();
+        
+        // Update company name
+        const companyNameElement = document.querySelector('.company-name');
+        if (companyNameElement && settings.name) {
+            companyNameElement.textContent = settings.name;
+        }
+
+        // Update page title
+        const pageTitleElement = document.getElementById('pageTitle');
+        if (pageTitleElement && settings.name) {
+            pageTitleElement.textContent = `${settings.name} Invoice Template`;
+        }
+
+        // Update logo (if element exists)
+        const logoElement = document.querySelector('.logo img');
+        if (logoElement && settings.logo) {
+            logoElement.src = settings.logo;
+        }
+
+        // Update company info section (create if doesn't exist)
+        this.updateCompanyInfoDisplay(settings);
+    }
+
+    // Update or create company info display section
+    updateCompanyInfoDisplay(settings) {
+        let companyInfoElement = document.querySelector('.company-info');
+        
+        if (!companyInfoElement) {
+            // Create company info element if it doesn't exist
+            companyInfoElement = document.createElement('div');
+            companyInfoElement.className = 'company-info';
+            
+            // Find a good place to insert it (in the header)
+            const header = document.querySelector('.header');
+            if (header) {
+                header.appendChild(companyInfoElement);
+            }
+        }
+
+        // Build company info HTML
+        let infoHTML = '';
+        if (settings.address) infoHTML += `<div>${settings.address}</div>`;
+        if (settings.phone) infoHTML += `<div>Phone: ${settings.phone}</div>`;
+        if (settings.email) infoHTML += `<div>Email: ${settings.email}</div>`;
+        if (settings.website) infoHTML += `<div>Website: ${settings.website}</div>`;
+
+        companyInfoElement.innerHTML = infoHTML;
+    }
+
+    // Generate next invoice number based on settings
+    generateInvoiceNumber() {
+        const settings = this.getSettings();
+        const prefix = settings.invoicePrefix || 'INV';
+        const startNumber = settings.invoiceStartNumber || 1;
+        
+        // Get existing drafts to find the highest invoice number
+        const drafts = this.storageManager.getAllDrafts();
+        let maxNumber = startNumber - 1;
+        
+        drafts.forEach(draft => {
+            if (draft.data?.invoiceNumber) {
+                const match = draft.data.invoiceNumber.match(new RegExp(`^${prefix}(\\d+)$`));
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num > maxNumber) maxNumber = num;
+                }
+            }
+        });
+        
+        return `${prefix}${(maxNumber + 1).toString().padStart(4, '0')}`;
+    }
+
+    // Calculate tax based on company settings
+    calculateTax(subtotal) {
+        const settings = this.getSettings();
+        const taxRate = settings.taxRate || 0;
+        return (subtotal * taxRate / 100);
+    }
+
+    // Open company settings modal
+    static openModal() {
+        let modal = document.getElementById('companySettingsModal');
+        if (!modal) {
+            CompanySettings.createSettingsModal();
+            modal = document.getElementById('companySettingsModal');
+        }
+        
+        // Populate form with current settings
+        CompanySettings.populateSettingsForm();
+        
+        modal.classList.add('show');
+    }
+
+    // Close company settings modal
+    static closeModal() {
+        const modal = document.getElementById('companySettingsModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    // Create the settings modal HTML
+    static createSettingsModal() {
+        const modalHTML = `
+            <div id="companySettingsModal" class="draft-modal">
+                <div class="draft-modal-content">
+                    <div class="draft-modal-header">
+                        <h2 class="draft-modal-title">Company Settings</h2>
+                        <button class="close-modal" onclick="CompanySettings.closeModal()">&times;</button>
+                    </div>
+                    <div class="settings-form">
+                        <div class="form-section">
+                            <h3>Company Information</h3>
+                            <div class="form-group">
+                                <label for="companyNameInput">Company Name:</label>
+                                <input type="text" id="companyNameInput" class="form-control" placeholder="Enter company name">
+                            </div>
+                            <div class="form-group">
+                                <label for="companyAddressInput">Address:</label>
+                                <textarea id="companyAddressInput" class="form-control" rows="3" placeholder="Enter company address"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="companyPhoneInput">Phone:</label>
+                                    <input type="tel" id="companyPhoneInput" class="form-control" placeholder="Enter phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label for="companyEmailInput">Email:</label>
+                                    <input type="email" id="companyEmailInput" class="form-control" placeholder="Enter email address">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="companyWebsiteInput">Website:</label>
+                                <input type="url" id="companyWebsiteInput" class="form-control" placeholder="Enter website URL">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Invoice Settings</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="invoicePrefixInput">Invoice Prefix:</label>
+                                    <input type="text" id="invoicePrefixInput" class="form-control" placeholder="INV" maxlength="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceStartNumberInput">Starting Number:</label>
+                                    <input type="number" id="invoiceStartNumberInput" class="form-control" min="1" placeholder="1">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="taxRateInput">Default Tax Rate (%):</label>
+                                <input type="number" id="taxRateInput" class="form-control" min="0" max="100" step="0.01" placeholder="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="CompanySettings.saveSettings()">Save Settings</button>
+                            <button type="button" class="btn btn-secondary" onclick="CompanySettings.closeModal()">Cancel</button>
+                            <button type="button" class="btn btn-outline" onclick="CompanySettings.resetToDefaults()">Reset to Defaults</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Populate the settings form with current values
+    static populateSettingsForm() {
+        const settings = window.companySettings.getSettings();
+        
+        document.getElementById('companyNameInput').value = settings.name || '';
+        document.getElementById('companyAddressInput').value = settings.address || '';
+        document.getElementById('companyPhoneInput').value = settings.phone || '';
+        document.getElementById('companyEmailInput').value = settings.email || '';
+        document.getElementById('companyWebsiteInput').value = settings.website || '';
+        document.getElementById('invoicePrefixInput').value = settings.invoicePrefix || 'INV';
+        document.getElementById('invoiceStartNumberInput').value = settings.invoiceStartNumber || 1;
+        document.getElementById('taxRateInput').value = settings.taxRate || 0;
+    }
+
+    // Save settings from the form
+    static saveSettings() {
+        const newSettings = {
+            name: document.getElementById('companyNameInput').value,
+            address: document.getElementById('companyAddressInput').value,
+            phone: document.getElementById('companyPhoneInput').value,
+            email: document.getElementById('companyEmailInput').value,
+            website: document.getElementById('companyWebsiteInput').value,
+            invoicePrefix: document.getElementById('invoicePrefixInput').value || 'INV',
+            invoiceStartNumber: parseInt(document.getElementById('invoiceStartNumberInput').value) || 1,
+            taxRate: parseFloat(document.getElementById('taxRateInput').value) || 0
+        };
+        
+        window.companySettings.updateSettings(newSettings);
+        
+        alert('Company settings saved successfully!');
+        CompanySettings.closeModal();
+    }
+
+    // Reset to default settings
+    static resetToDefaults() {
+        if (confirm('Reset all company settings to defaults? This cannot be undone.')) {
+            const defaultSettings = {
+                name: 'US AGRICOM',
+                logo: '/assets/images/usa-logo.png',
+                address: '',
+                phone: '',
+                email: '',
+                website: '',
+                taxRate: 0,
+                invoicePrefix: 'INV',
+                invoiceStartNumber: 1
+            };
+            
+            window.companySettings.updateSettings(defaultSettings);
+            CompanySettings.populateSettingsForm();
+            
+            alert('Settings reset to defaults!');
+        }
+    }
+}
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = CompanySettings;
+}
