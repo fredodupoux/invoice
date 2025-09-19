@@ -1,0 +1,9 @@
+[build]
+  # No build command required for this static site
+  command = ""
+  # Publish the repository root (where index.html lives)
+  publish = "."
+
+[context]
+  # If you later add a frontend build (e.g. a 'dist' or 'build' folder),
+  # update `publish` to point to that directory and set `command` accordingly.
